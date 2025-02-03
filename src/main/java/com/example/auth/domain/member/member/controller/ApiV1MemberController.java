@@ -45,4 +45,21 @@ public class ApiV1MemberController {
         );
     }
 
+    record LoginReqBody(@NotBlank @Length(min = 3) String username, @NotBlank @Length(min = 3) String password) {}
+
+    @PostMapping
+    public RsData<String> login(@RequestBody @Valid LoginReqBody body) {
+
+        Member member = memberService.findByUsername(body.username)
+                .orElseThrow(() -> new ServiceException("403-1", "login failed."));
+
+        if(!member.getPassword().equals(body.password))
+            throw new ServiceException("403-1", "login failed");
+
+        return new RsData<>(
+                "200-1",
+                "welcome",
+                member.getApiKey()
+        );
+    }
 }
