@@ -1,13 +1,12 @@
 package com.example.auth.domain.post.post.controller;
 
 import com.example.auth.domain.member.member.entity.Member;
-import com.example.auth.domain.member.member.service.MemberService;
 import com.example.auth.domain.post.post.dto.PostDto;
 import com.example.auth.domain.post.post.entity.Post;
 import com.example.auth.domain.post.post.service.PostService;
+import com.example.auth.global.Rq;
 import com.example.auth.global.dto.RsData;
 import com.example.auth.global.exception.ServiceException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -24,8 +22,7 @@ import java.util.Optional;
 public class ApiV1PostController {
 
     private final PostService postService;
-    private final MemberService memberService;
-    private final HttpServletRequest request;
+    private final Rq rq;
 
     @GetMapping
     public RsData<List<PostDto>> getItems() {
@@ -58,7 +55,7 @@ public class ApiV1PostController {
     @DeleteMapping("/{id}")
     public RsData<Void> delete(@PathVariable long id) {
 
-        Member actor = getAuthenticatedActor();
+        Member actor = rq.getAuthenticatedActor();
 
         Post post = postService.getItem(id).get();
 
@@ -81,7 +78,7 @@ public class ApiV1PostController {
     @PutMapping("{id}")
     public RsData<Void> modify(@PathVariable long id, @RequestBody @Valid ModifyReqBody body) {
 
-        Member actor = getAuthenticatedActor();
+        Member actor = rq.getAuthenticatedActor();
 
         Post post = postService.getItem(id).get();
 
@@ -106,7 +103,7 @@ public class ApiV1PostController {
     @PostMapping
     public RsData<PostDto> write(@RequestBody @Valid WriteReqBody body) {
 
-        Member actor = getAuthenticatedActor();
+        Member actor = rq.getAuthenticatedActor();
         Post post = postService.write(actor, body.title(), body.content());
 
 
@@ -117,14 +114,4 @@ public class ApiV1PostController {
         );
     }
 
-    private Member getAuthenticatedActor() {
-        String authorization = request.getHeader("Authorization");
-
-        String apiKey = authorization.substring("Bearer ".length());
-
-        Member actor = memberService.findByApiKey(apiKey)
-                .orElseThrow(() -> new ServiceException("401-1", "비밀번호가 틀립니다."));
-
-        return actor;
-    }
 }
