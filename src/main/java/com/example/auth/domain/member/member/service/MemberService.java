@@ -38,7 +38,7 @@ public class MemberService {
     public Optional<Member> findById(@NotNull Long memberId) {
         return memberRepository.findById(memberId);
     }
-    public Optional<Member> findByPassword2(String password2){
+    public Optional<Member> findByApiKey(String password2){
         return memberRepository.findByApiKey(password2);
     }
 }

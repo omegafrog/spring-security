@@ -118,12 +118,11 @@ public class ApiV1PostController {
     }
 
     private Member getAuthenticatedActor() {
-        String authorization = request.getHeader("Authorization").split(" ")[1];
+        String authorization = request.getHeader("Authorization");
 
+        String apiKey = authorization.substring("Bearer ".length());
 
-        String password2 = authorization.substring("Bearer ".length());
-
-        Member actor = memberService.findByPassword2(password2)
+        Member actor = memberService.findByApiKey(apiKey)
                 .orElseThrow(() -> new ServiceException("401-1", "비밀번호가 틀립니다."));
 
         return actor;
