@@ -7,6 +7,8 @@ import jakarta.persistence.EntityListeners;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -22,5 +24,6 @@ public class Member extends BaseTime {
     private String password;
     @Column(length = 100)
     private String nickname;
+    private String password2;
 
 }
