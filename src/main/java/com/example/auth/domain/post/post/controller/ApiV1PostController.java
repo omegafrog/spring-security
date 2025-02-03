@@ -74,11 +74,17 @@ public class ApiV1PostController {
     public RsData<Void> modify(@PathVariable long id, @RequestBody @Valid ModifyReqBody body) {
 
         Member actor = memberService.findById(body.memberId).get();
+
         if (!actor.getPassword().equals(body.password)) {
             throw new ServiceException("401-1", "비밀번호가 틀립니다.");
         }
 
         Post post = postService.getItem(id).get();
+
+        if( !post.getAuthor().equals(actor) ){
+            throw new ServiceException("403-1", "다른 사람의 글은 수정할 수 없습니다.");
+        }
+
         postService.modify(post, body.title(), body.content());
         return new RsData<>(
                 "200-1",
@@ -102,6 +108,7 @@ public class ApiV1PostController {
             throw new ServiceException("401-1", "비밀번호가 틀립니다.");
         }
         Post post = postService.write(actor, body.title(), body.content());
+
 
         return new RsData<>(
                 "200-1",
