@@ -7,6 +7,7 @@ import com.example.auth.domain.post.post.entity.Post;
 import com.example.auth.domain.post.post.service.PostService;
 import com.example.auth.global.dto.RsData;
 import com.example.auth.global.exception.ServiceException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class ApiV1PostController {
 
     private final PostService postService;
     private final MemberService memberService;
+    private final HttpServletRequest request;
 
     @GetMapping
     public RsData<List<PostDto>> getItems() {
@@ -53,9 +55,9 @@ public class ApiV1PostController {
     }
 
     @DeleteMapping("/{id}")
-    public RsData<Void> delete(@PathVariable long id, @NotBlank @RequestHeader String credentials) {
+    public RsData<Void> delete(@PathVariable long id) {
 
-        Member actor = getAuthenticatedActor(credentials);
+        Member actor = getAuthenticatedActor();
 
         Post post = postService.getItem(id).get();
 
@@ -76,10 +78,9 @@ public class ApiV1PostController {
     }
 
     @PutMapping("{id}")
-    public RsData<Void> modify(@PathVariable long id, @RequestBody @Valid ModifyReqBody body,
-                                @NotBlank @RequestHeader String credentials) {
+    public RsData<Void> modify(@PathVariable long id, @RequestBody @Valid ModifyReqBody body) {
 
-        Member actor = getAuthenticatedActor(credentials);
+        Member actor = getAuthenticatedActor();
 
         Post post = postService.getItem(id).get();
 
@@ -102,10 +103,9 @@ public class ApiV1PostController {
     }
 
     @PostMapping
-    public RsData<PostDto> write(@RequestBody @Valid WriteReqBody body,
-                                 @NotBlank @RequestHeader String credentials) {
+    public RsData<PostDto> write(@RequestBody @Valid WriteReqBody body) {
 
-        Member actor = getAuthenticatedActor(credentials);
+        Member actor = getAuthenticatedActor();
         Post post = postService.write(actor, body.title(), body.content());
 
 
@@ -116,9 +116,11 @@ public class ApiV1PostController {
         );
     }
 
-    private Member getAuthenticatedActor(String credentials) {
-        Long memberId = Long.parseLong(credentials.split("/")[0]);
-        String password = credentials.split("/")[1];
+    private Member getAuthenticatedActor() {
+        String authorization = request.getHeader("Authorization").split(" ")[1];
+
+        Long memberId = Long.parseLong(authorization.split("/")[0]);
+        String password = authorization.split("/")[1];
 
         Member actor = memberService.findById(memberId).get();
 
